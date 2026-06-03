@@ -16,6 +16,22 @@ dépôt git.
 
 ---
 
+## 🖼 Aperçu
+
+### Tableau de bord — expéditeurs classés, catégorisés, actionnables
+![Vue Expéditeurs](docs/screenshots/01-expediteurs.png)
+
+### 🛡 Détection de phishing / usurpation de marque
+![Vue Suspects](docs/screenshots/02-suspects.png)
+
+### 📊 Insights — volume, espace, expéditeurs dormants
+![Insights](docs/screenshots/03-insights.png)
+
+> Captures réalisées avec des **données de démonstration** ; les adresses sont
+> de surcroît floutées. Aucune donnée réelle n'est utilisée.
+
+---
+
 ## ✨ Fonctionnalités
 
 - **Multi-comptes** — Outlook / Hotmail (OAuth2), Gmail, Yahoo, iCloud, Free,
