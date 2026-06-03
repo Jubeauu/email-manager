@@ -1,0 +1,31 @@
+# ───────────────────────────────────────────────────────────
+#  Données locales — JAMAIS versionnées (comptes, jetons,
+#  cache des e-mails, exports). Contiennent des données perso.
+# ───────────────────────────────────────────────────────────
+data/*
+!data/.gitkeep
+
+# Environnement Python & cache
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Secrets éventuels
+*.env
+.env
+.env.*
+*.key
+*.pem
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.idea/
+.vscode/
+.claude/

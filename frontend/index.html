@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Manager · Tableau de bord</title>
+  <link rel="stylesheet" href="/style.css?v=4" />
+</head>
+<body>
+<div class="app">
+  <!-- ===== Barre latérale ===== -->
+  <aside class="sidebar">
+    <div class="logo">📬 <span>Email Manager</span></div>
+
+    <nav class="nav">
+      <button class="navitem active" data-view="senders">📥 <span>Expéditeurs</span></button>
+      <button class="navitem" data-view="suspects">⚠️ <span>Suspects</span> <span id="suspBadge" class="navbadge hidden">0</span></button>
+      <button class="navitem" data-view="insights">📊 <span>Insights</span></button>
+      <button class="navitem" data-view="rules">⚙️ <span>Règles &amp; auto</span></button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <select id="accountFilter" title="Filtrer par compte">
+        <option value="all">Tous les comptes</option>
+      </select>
+      <select id="scanMode" title="Portée du scan">
+        <option value="new">Nouveaux mails (rapide)</option>
+        <option value="3m">3 derniers mois</option>
+        <option value="1y">Dernière année</option>
+        <option value="all">Tout (complet)</option>
+      </select>
+      <label class="chk small"><input type="checkbox" id="scanAll" /> Inclure tous les dossiers</label>
+      <button id="scanBtn" class="btn primary block">⟳ Scanner</button>
+      <button id="accountsBtn" class="btn block">⚙ Gérer les comptes</button>
+    </div>
+  </aside>
+
+  <!-- ===== Zone principale ===== -->
+  <div class="main">
+    <div id="scanBar" class="scanbar hidden">
+      <div class="scanbar-label" id="scanBarLabel">Scan…</div>
+      <div class="progress"><div id="progressFill" class="progress-fill"></div></div>
+      <div id="scanText" class="scanbar-text"></div>
+    </div>
+
+    <main class="container">
+      <!-- VUE EXPÉDITEURS -->
+      <section id="view-senders" class="view">
+        <div class="view-head">
+          <h1>Expéditeurs</h1>
+          <div class="actions-right">
+            <button id="unsubAllBtn" class="btn">🚫 Tout désabonner</button>
+            <button id="exportBtn" class="btn">⬇ Exporter</button>
+          </div>
+        </div>
+
+        <section class="stats" id="stats"></section>
+
+        <section class="toolbar">
+          <div class="filters">
+            <input id="search" type="text" placeholder="🔍 Filtrer un expéditeur…" />
+            <select id="catFilter"><option value="">Toutes catégories</option></select>
+            <label class="chk"><input type="checkbox" id="promoOnly" /> Promos</label>
+            <label class="chk"><input type="checkbox" id="unreadOnly" /> Non lus</label>
+            <select id="sortBy">
+              <option value="count">Trier : volume</option>
+              <option value="unread_count">Trier : non lus</option>
+              <option value="last_ts">Trier : plus récent</option>
+              <option value="total_size">Trier : poids</option>
+            </select>
+          </div>
+        </section>
+
+        <div class="bulk hidden" id="bulkActions">
+          <span id="selCount">0 sélectionné(s)</span>
+          <div class="bulk-btns">
+            <button class="btn" data-bulk="unsubscribe">🚫 Désabonner</button>
+            <button class="btn" data-bulk="archive">📦 Archiver</button>
+            <button class="btn danger" data-bulk="delete">🗑 Supprimer</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="sendersTable">
+            <thead>
+              <tr>
+                <th class="col-chk"><input type="checkbox" id="selectAll" /></th>
+                <th>Expéditeur</th>
+                <th class="num">Mails</th>
+                <th class="num">Non lus</th>
+                <th>Dernier</th>
+                <th class="num">Poids</th>
+                <th>Désab.</th>
+                <th class="col-act">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sendersBody"></tbody>
+          </table>
+          <div id="emptyState" class="empty">
+            <div class="empty-icon">📭</div>
+            <p>Aucune donnée pour l'instant.</p>
+            <p class="hint">Ajoute un compte puis lance un scan pour analyser tes boîtes.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- VUE SUSPECTS -->
+      <section id="view-suspects" class="view hidden">
+        <div class="view-head"><h1>⚠️ Suspects</h1></div>
+        <p class="hint">Mails se faisant passer pour une marque connue avec un domaine
+          non officiel, domaines sosies, ou échecs d'authentification (SPF/DKIM/DMARC).</p>
+        <div id="suspectsList" class="suspects"></div>
+      </section>
+
+      <!-- VUE INSIGHTS -->
+      <section id="view-insights" class="view hidden">
+        <div class="view-head"><h1>📊 Insights</h1></div>
+        <div class="insight-block"><h3>Volume reçu par mois</h3><div id="volChart" class="bars"></div></div>
+        <div class="insight-block"><h3>Plus gros consommateurs d'espace</h3><div id="sizeChart" class="bars"></div></div>
+        <div class="insight-block"><h3>Expéditeurs dormants (plus rien de récent)</h3><div id="dormantList" class="bars"></div></div>
+      </section>
+
+      <!-- VUE RÈGLES -->
+      <section id="view-rules" class="view hidden">
+        <div class="view-head"><h1>⚙️ Règles &amp; automatisation</h1></div>
+
+        <div class="insight-block">
+          <h3>🕒 Scan automatique</h3>
+          <div class="form-row">
+            <label class="chk"><input type="checkbox" id="schEnabled" /> Activer</label>
+            <label>Toutes les <input id="schInterval" type="number" min="1" value="24" class="mini"> h</label>
+            <label class="chk"><input type="checkbox" id="schScanAll" /> Tous les dossiers</label>
+            <label class="chk"><input type="checkbox" id="schApplyRules" checked /> Appliquer les règles</label>
+            <button id="saveSchedule" class="btn primary">Enregistrer</button>
+          </div>
+          <div id="schMsg" class="form-msg"></div>
+        </div>
+
+        <div class="insight-block">
+          <h3>🛡 Expéditeurs protégés <span class="hint">(jamais supprimés / archivés)</span></h3>
+          <textarea id="protectedList" rows="3" placeholder="Une adresse ou un domaine par ligne&#10;ex : ma-banque.fr"></textarea>
+          <button id="saveProtected" class="btn">Enregistrer</button>
+        </div>
+
+        <div class="insight-block">
+          <h3>⚙ Règles automatiques</h3>
+          <p class="hint">Appliquées automatiquement à la fin de chaque scan.</p>
+          <div class="form-row">
+            <select id="ruleMatchType">
+              <option value="sender">Expéditeur</option>
+              <option value="domain">Domaine</option>
+              <option value="category">Catégorie</option>
+            </select>
+            <input id="ruleValue" type="text" placeholder="ex : shein.com" />
+            <select id="ruleAction">
+              <option value="delete">Supprimer</option>
+              <option value="archive">Archiver</option>
+              <option value="move">Déplacer vers…</option>
+            </select>
+            <input id="ruleTarget" type="text" placeholder="dossier" class="mini2" />
+            <button id="addRuleBtn" class="btn primary">Ajouter</button>
+          </div>
+          <div id="rulesList" class="rules-list"></div>
+          <button id="applyRulesBtn" class="btn">▶ Appliquer les règles maintenant</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ===== Modale comptes ===== -->
+<div id="accountsModal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Comptes mail</h2><button class="close" id="closeAccounts">✕</button></div>
+    <div id="accountsList" class="accounts-list"></div>
+    <hr />
+    <div class="tabs">
+      <button class="tab active" data-tab="oauth">Outlook / Microsoft</button>
+      <button class="tab" data-tab="pwd">Gmail / IMAP</button>
+    </div>
+    <div id="tab-oauth" class="tab-pane">
+      <p class="hint">Entre ton adresse, clique sur Connexion, puis valide dans la page
+        Microsoft. Aucun mot de passe stocké.</p>
+      <div class="form">
+        <input id="msEmail" type="email" placeholder="Adresse Outlook / Hotmail" />
+        <input id="msLabel" type="text" placeholder="Nom du compte (optionnel)" />
+        <details><summary>Avancé : mon propre ID d'application Azure</summary>
+          <input id="msClientId" type="text" placeholder="client_id (vide = Thunderbird)" />
+        </details>
+        <div class="form-actions"><button id="msConnectBtn" class="btn primary">🔐 Connexion Microsoft</button></div>
+        <div id="msFlow" class="ms-flow hidden">
+          <p>Saisis ce code sur la page Microsoft :</p>
+          <div class="user-code" id="msUserCode"></div>
+          <a id="msVerifyLink" href="#" target="_blank" class="btn">Ouvrir la page Microsoft</a>
+          <p class="hint" id="msStatus">En attente…</p>
+        </div>
+        <div id="msMsg" class="form-msg"></div>
+      </div>
+    </div>
+    <div id="tab-pwd" class="tab-pane hidden">
+      <div class="form">
+        <input id="accEmail" type="email" placeholder="Adresse e-mail" />
+        <input id="accPassword" type="password" placeholder="Mot de passe d'application" />
+        <input id="accLabel" type="text" placeholder="Nom (optionnel)" />
+        <details><summary>Réglages IMAP avancés</summary>
+          <input id="accHost" type="text" placeholder="Serveur IMAP (auto-détecté)" />
+          <input id="accPort" type="number" placeholder="Port (993)" />
+          <input id="accUser" type="text" placeholder="Identifiant (si ≠ e-mail)" />
+        </details>
+        <div class="form-actions">
+          <button id="testAccBtn" class="btn">Tester</button>
+          <button id="addAccBtn" class="btn primary">Ajouter</button>
+        </div>
+        <div id="accMsg" class="form-msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modale détails ===== -->
+<div id="detailModal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head"><h2 id="detailTitle">Messages</h2><button class="close" id="closeDetail">✕</button></div>
+    <div id="detailBody" class="detail-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/app.js?v=4"></script>
+</body>
+</html>

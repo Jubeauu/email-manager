@@ -1,0 +1,8 @@
+# Ce dossier accueille les données locales générées par l'application :
+#   - accounts.json   (comptes connectés + identifiants)
+#   - cache.db        (cache SQLite des messages scannés)
+#   - rules.json      (règles de tri + expéditeurs protégés)
+#   - schedule.json   (configuration du scan automatique)
+#
+# Tous ces fichiers sont ignorés par git (voir .gitignore) et ne doivent
+# jamais être partagés : ils contiennent des données personnelles.
