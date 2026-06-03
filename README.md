@@ -1,5 +1,13 @@
 # 📬 Email Manager
 
+![License](https://img.shields.io/badge/license-MIT-green)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-backend-009688)
+![100% local](https://img.shields.io/badge/100%25-local%20%26%20priv%C3%A9-success)
+![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
+
+**Français** · [English](README.en.md)
+
 > Tableau de bord **local** pour analyser, nettoyer et sécuriser ses boîtes mail
 > multi-comptes — détection des newsletters, désabonnement de masse, repérage du
 > phishing par usurpation de marque, et tri automatique.
@@ -17,6 +25,8 @@ dépôt git.
 ---
 
 ## 🖼 Aperçu
+
+![Démonstration](docs/demo.gif)
 
 ### Tableau de bord — expéditeurs classés, catégorisés, actionnables
 ![Vue Expéditeurs](docs/screenshots/01-expediteurs.png)
